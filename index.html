@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="bn" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>প্রস্তুতি ট্র্যাকার — চাকরির পরীক্ষার প্রস্তুতি</title>
+<meta name="theme-color" content="#12161c" />
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
+
+<!-- iOS/iPhone-এ "Add to Home Screen" করে অ্যাপের মতো চালানোর জন্য -->
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="প্রস্তুতি ট্র্যাকার" />
+<link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png" />
+
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<div id="bgPhotoLayer" class="bg-photo-layer" aria-hidden="true"></div>
+
+<div id="app">
+
+  <!-- ===== Sidebar ===== -->
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-mark">প্র</span>
+      <div class="brand-text">
+        <strong id="brandTitle">প্রস্তুতি ট্র্যাকার</strong>
+        <small id="brandTagline">অফলাইন প্রস্তুতি সহায়ক</small>
+      </div>
+      <button class="lang-toggle" id="langToggleBtn" title="Change language">EN</button>
+    </div>
+
+    <button class="nav-item" data-nav="dashboard" id="navDashboard">
+      <span class="nav-ico">◧</span> <span data-i18n="nav_dashboard">ড্যাশবোর্ড</span>
+    </button>
+    <button class="nav-item" data-nav="stickyNotes" id="navStickyNotes">
+      <span class="nav-ico">📌</span> <span data-i18n="nav_stickyNotes">স্টিকি নোট</span>
+    </button>
+    <button class="nav-item" data-nav="diary" id="navDiary">
+      <span class="nav-ico">📔</span> <span data-i18n="nav_diary">পড়ার ডায়েরি</span>
+    </button>
+    <button class="nav-item" data-nav="dictionary" id="navDictionary">
+      <span class="nav-ico">🔤</span> <span data-i18n="nav_dictionary">অভিধান</span>
+    </button>
+
+    <div class="sidebar-section-label" data-i18n="nav_sectors">চাকরির ক্ষেত্র</div>
+    <div id="sectorNavList" class="sector-nav-list"></div>
+    <button class="add-sector-btn" id="btnAddSector" data-i18n="nav_addSector">+ নতুন ক্ষেত্র যোগ করুন</button>
+
+    <div class="sidebar-spacer"></div>
+
+    <button class="nav-item nav-item-sub" data-nav="settings" id="navSettings">
+      <span class="nav-ico">⚙</span> <span data-i18n="nav_settings">সেটিংস ও ব্যাকআপ</span>
+    </button>
+
+    <!-- ===== Sidebar tools (focus timer + calculator) toggle বাটন — আসল প্যানেল দুটো
+         এখন নিচে রুট লেভেলে ফুল-পেজ ওভারলে হিসেবে বসানো আছে ===== -->
+    <div class="sidebar-tools" id="sidebarTools">
+      <div class="tools-toggle-row">
+        <button class="tool-toggle-btn" id="focusDockToggle" title="Focus assistant">
+          <span class="tool-toggle-ico">◔</span><span class="tool-toggle-label" id="toolFocusLabel">ফোকাস</span>
+        </button>
+        <button class="tool-toggle-btn" id="calcDockToggle" title="Calculator">
+          <span class="tool-toggle-ico">🧮</span><span class="tool-toggle-label" id="toolCalcLabel">ক্যালকুলেটর</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="clock-widget" id="clockWidget">
+      <div class="clock-time" id="clockTime">--:--</div>
+      <div class="clock-date" id="clockDate">--</div>
+    </div>
+  </aside>
+
+  <!-- ===== মোবাইলের জন্য নিচের ট্যাব বার (native app-এর মতো) ===== -->
+  <nav class="mobile-bottom-nav" id="mobileBottomNav">
+    <button class="mbn-item" data-mbn="dashboard">
+      <span class="mbn-ico">🏠</span><span class="mbn-label" data-i18n="mbn_home">হোম</span>
+    </button>
+    <button class="mbn-item" data-mbn="sectors">
+      <span class="mbn-ico">📚</span><span class="mbn-label" data-i18n="mbn_sectors">ক্ষেত্র</span>
+    </button>
+    <button class="mbn-item" data-mbn="diary">
+      <span class="mbn-ico">📔</span><span class="mbn-label" data-i18n="mbn_diary">ডায়েরি</span>
+    </button>
+    <button class="mbn-item" data-mbn="stickyNotes">
+      <span class="mbn-ico">📌</span><span class="mbn-label" data-i18n="mbn_notes">নোট</span>
+    </button>
+    <button class="mbn-item" data-mbn="more">
+      <span class="mbn-ico">☰</span><span class="mbn-label" data-i18n="mbn_more">আরও</span>
+    </button>
+  </nav>
+
+  <!-- ===== Main ===== -->
+  <main class="main" id="mainView">
+    <!-- rendered by app.js -->
+  </main>
+
+  <!-- ===== Modal host ===== -->
+  <div class="modal-overlay hidden" id="modalOverlay">
+    <div class="modal-box" id="modalBox"></div>
+  </div>
+
+  <!-- ===== Focus / Calculator — full-page overlays (Facebook-style "নতুন পেজ"),
+       রুট-লেভেলে থাকে যাতে সাইডবার/বটম-ন্যাভ কখনো এগুলোর উপর বসতে না পারে ===== -->
+  <div class="tool-panel" id="focusDockPanel">
+    <div class="tool-page-header">
+      <button class="tool-page-back" id="focusPageBack" data-i18n-title="toolPage_back" title="Back">←</button>
+      <span class="tool-page-title" data-i18n="focusPage_title" id="toolFocusPageTitle">ফোকাস সহায়ক</span>
+    </div>
+    <div class="tool-page-body">
+      <div class="focus-dock-tabs">
+        <button class="fdt active" data-fdtab="timer" id="fdTabTimer">ফোকাস টাইমার</button>
+        <button class="fdt" data-fdtab="stopwatch" id="fdTabStopwatch">স্টপওয়াচ</button>
+      </div>
+
+      <div class="fd-pane" id="fdTimerPane">
+        <div class="fd-display" id="fdTimerDisplay">২৫:০০</div>
+        <div class="fd-sub" id="fdTimerMode">ফোকাস সেশন</div>
+        <div class="fd-row">
+          <label id="fdMinutesLabel">মিনিট
+            <input type="number" id="fdMinutesInput" value="25" min="1" max="180" />
+          </label>
+        </div>
+        <div class="fd-cascade" id="fdCascadeWrap"></div>
+        <div class="fd-btns">
+          <button id="fdStart" class="btn btn-accent">শুরু</button>
+          <button id="fdPause" class="btn" disabled>বিরতি</button>
+          <button id="fdReset" class="btn btn-ghost">রিসেট</button>
+        </div>
+        <button id="fdEnterFullscreen" class="btn btn-fullscreen-focus">🖥 <span id="fdFullscreenLabel">ফুলস্ক্রিন ফোকাস মোড</span></button>
+      </div>
+
+      <div class="fd-pane hidden" id="fdStopwatchPane">
+        <div class="fd-display" id="fdSwDisplay">00:00</div>
+        <div class="fd-btns">
+          <button id="fdSwStart" class="btn btn-accent">শুরু</button>
+          <button id="fdSwPause" class="btn" disabled>বিরতি</button>
+          <button id="fdSwReset" class="btn btn-ghost">রিসেট</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tool-panel" id="calcDockPanel">
+    <div class="tool-page-header">
+      <button class="tool-page-back" id="calcPageBack" data-i18n-title="toolPage_back" title="Back">←</button>
+      <span class="tool-page-title" data-i18n="calc_title" id="toolCalcPageTitle">ক্যালকুলেটর</span>
+    </div>
+    <div class="tool-page-body">
+      <div class="calc-screen" id="calcScreen">0</div>
+      <div class="calc-grid">
+        <button class="calc-btn calc-fn" id="calcClear">C</button>
+        <button class="calc-btn calc-fn" id="calcSign">±</button>
+        <button class="calc-btn calc-fn" id="calcPercent">%</button>
+        <button class="calc-btn calc-op" data-op="÷">÷</button>
+
+        <button class="calc-btn" data-digit="7">7</button>
+        <button class="calc-btn" data-digit="8">8</button>
+        <button class="calc-btn" data-digit="9">9</button>
+        <button class="calc-btn calc-op" data-op="×">×</button>
+
+        <button class="calc-btn" data-digit="4">4</button>
+        <button class="calc-btn" data-digit="5">5</button>
+        <button class="calc-btn" data-digit="6">6</button>
+        <button class="calc-btn calc-op" data-op="-">−</button>
+
+        <button class="calc-btn" data-digit="1">1</button>
+        <button class="calc-btn" data-digit="2">2</button>
+        <button class="calc-btn" data-digit="3">3</button>
+        <button class="calc-btn calc-op" data-op="+">+</button>
+
+        <button class="calc-btn calc-zero" data-digit="0">0</button>
+        <button class="calc-btn" data-digit=".">.</button>
+        <button class="calc-btn calc-fn" id="calcBack">⌫</button>
+        <button class="calc-btn calc-eq" id="calcEquals">=</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Fullscreen premium focus mode ===== -->
+  <div class="focus-fullscreen hidden" id="focusFullscreen">
+    <div class="ff-bg">
+      <div class="ff-blob ff-blob-1"></div>
+      <div class="ff-blob ff-blob-2"></div>
+      <div class="ff-blob ff-blob-3"></div>
+      <div class="ff-noise"></div>
+    </div>
+
+    <button class="ff-exit" id="ffExitBtn" title="ফুলস্ক্রিন থেকে বের হন">✕</button>
+
+    <div class="ff-content">
+      <div class="ff-context" id="ffContext">ফোকাস সেশন</div>
+
+      <div class="ff-ring-wrap">
+        <svg class="ff-ring" viewBox="0 0 220 220">
+          <circle class="ff-ring-track" cx="110" cy="110" r="100"></circle>
+          <circle class="ff-ring-progress" id="ffRingProgress" cx="110" cy="110" r="100"></circle>
+        </svg>
+        <div class="ff-ring-center">
+          <div class="ff-time" id="ffTimerDisplay">২৫:০০</div>
+          <div class="ff-mode" id="ffTimerMode">ফোকাস চলছে…</div>
+        </div>
+      </div>
+
+      <div class="ff-btns">
+        <button id="ffPause" class="btn btn-ghost ff-btn">বিরতি</button>
+        <button id="ffEnd" class="btn btn-danger ff-btn">সেশন শেষ করুন</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+</div>
+
+<script src="vendor/pdfjs/pdf.min.js"></script>
+<script src="js/db.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/tts.js"></script>
+<script src="js/calculator.js"></script>
+<script src="js/calendar.js"></script>
+<script src="js/dictionary-data.js"></script>
+<script src="js/dictionary.js"></script>
+<script src="js/routine-generator.js"></script>
+<script src="js/focus.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
